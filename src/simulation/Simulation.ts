@@ -59,8 +59,6 @@ export class Simulation {
           if (this.tryMove(x, y, x + offset, y + 1)) break;
         }
       }
-
-      leftToRight = !leftToRight;
     }
 
     this.scanLeftToRight = !this.scanLeftToRight;

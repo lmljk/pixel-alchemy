@@ -43,6 +43,23 @@ describe("Simulation", () => {
     expect(simulation.getCell(1, 1)).toBe(Material.Sand);
   });
 
+  it("uses the same scan direction for every row in a step", () => {
+    const simulation = new Simulation(3, 4, () => 0);
+    simulation.paintCircle(0, 1, 0, Material.Sand);
+    simulation.paintCircle(2, 1, 0, Material.Sand);
+    simulation.paintCircle(0, 2, 0, Material.Sand);
+    simulation.paintCircle(2, 2, 0, Material.Sand);
+    simulation.paintCircle(0, 3, 0, Material.Sand);
+    simulation.paintCircle(1, 3, 0, Material.Sand);
+    simulation.paintCircle(2, 3, 0, Material.Sand);
+
+    simulation.step();
+
+    expect(simulation.getCell(0, 1)).toBe(Material.Empty);
+    expect(simulation.getCell(1, 2)).toBe(Material.Sand);
+    expect(simulation.getCell(2, 1)).toBe(Material.Sand);
+  });
+
   it("erases sand inside a circle when painting empty material", () => {
     const simulation = new Simulation(3, 3, () => 0);
     simulation.paintCircle(1, 1, 1, Material.Sand);
