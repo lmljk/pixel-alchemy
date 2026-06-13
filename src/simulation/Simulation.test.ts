@@ -18,4 +18,59 @@ describe("Simulation", () => {
     expect(simulation.getCell(1, 1)).toBe(Material.Empty);
     expect(simulation.getCell(1, 2)).toBe(Material.Sand);
   });
+
+  it("slides sand down-left when below and down-right are blocked", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Sand);
+    simulation.paintCircle(1, 2, 0, Material.Sand);
+    simulation.paintCircle(2, 2, 0, Material.Sand);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+    expect(simulation.getCell(0, 2)).toBe(Material.Sand);
+  });
+
+  it("keeps sand still when all cells below are blocked", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Sand);
+    simulation.paintCircle(0, 2, 0, Material.Sand);
+    simulation.paintCircle(1, 2, 0, Material.Sand);
+    simulation.paintCircle(2, 2, 0, Material.Sand);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Sand);
+  });
+
+  it("erases sand inside a circle when painting empty material", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 1, Material.Sand);
+
+    simulation.paintCircle(1, 1, 1, Material.Empty);
+
+    expect(simulation.cells).toEqual(new Uint8Array(9));
+  });
+
+  it("clears all cells", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 1, Material.Sand);
+
+    simulation.clear();
+
+    expect(simulation.cells).toEqual(new Uint8Array(9));
+  });
+
+  it("ignores out-of-bounds brushes and reads", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+
+    expect(() =>
+      simulation.paintCircle(-2, -2, 1, Material.Sand),
+    ).not.toThrow();
+    expect(simulation.cells).toEqual(new Uint8Array(9));
+    expect(simulation.getCell(-1, 0)).toBeUndefined();
+    expect(simulation.getCell(3, 0)).toBeUndefined();
+    expect(simulation.getCell(0, -1)).toBeUndefined();
+    expect(simulation.getCell(0, 3)).toBeUndefined();
+  });
 });

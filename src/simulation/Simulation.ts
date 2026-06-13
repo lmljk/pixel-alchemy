@@ -4,6 +4,7 @@ type RandomSource = () => number;
 
 export class Simulation {
   readonly cells: Uint8Array;
+  private scanLeftToRight = true;
 
   constructor(
     readonly width: number,
@@ -36,15 +37,44 @@ export class Simulation {
     }
   }
 
+  clear(): void {
+    this.cells.fill(Material.Empty);
+  }
+
   step(): void {
+    let leftToRight = this.scanLeftToRight;
+
     for (let y = this.height - 2; y >= 0; y -= 1) {
-      for (let x = 0; x < this.width; x += 1) {
+      const startX = leftToRight ? 0 : this.width - 1;
+      const endX = leftToRight ? this.width : -1;
+      const stepX = leftToRight ? 1 : -1;
+
+      for (let x = startX; x !== endX; x += stepX) {
         if (this.getCell(x, y) !== Material.Sand) continue;
-        if (this.getCell(x, y + 1) === Material.Empty) {
-          this.move(x, y, x, y + 1);
+
+        if (this.tryMove(x, y, x, y + 1)) continue;
+
+        const diagonalOffsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
+        for (const offset of diagonalOffsets) {
+          if (this.tryMove(x, y, x + offset, y + 1)) break;
         }
       }
+
+      leftToRight = !leftToRight;
     }
+
+    this.scanLeftToRight = !this.scanLeftToRight;
+  }
+
+  private tryMove(
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number,
+  ): boolean {
+    if (this.getCell(toX, toY) !== Material.Empty) return false;
+    this.move(fromX, fromY, toX, toY);
+    return true;
   }
 
   private move(fromX: number, fromY: number, toX: number, toY: number): void {
