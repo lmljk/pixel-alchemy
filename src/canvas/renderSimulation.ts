@@ -1,11 +1,8 @@
-import { Material } from "../simulation/materials";
+import {
+  Material,
+  getMaterialDefinition,
+} from "../simulation/materials";
 import { Simulation } from "../simulation/Simulation";
-
-const SAND_COLORS = [
-  [207, 145, 59],
-  [217, 157, 70],
-  [191, 125, 46],
-] as const;
 
 export function renderSimulation(
   simulation: Simulation,
@@ -21,7 +18,10 @@ export function renderSimulation(
       continue;
     }
 
-    const color = SAND_COLORS[index % SAND_COLORS.length];
+    const definition = getMaterialDefinition(
+      simulation.cells[index] as Material,
+    );
+    const color = definition.colors[index % definition.colors.length];
     imageData.data[pixel] = color[0];
     imageData.data[pixel + 1] = color[1];
     imageData.data[pixel + 2] = color[2];

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { Material } from "../simulation/materials";
+import {
+  DRAWABLE_MATERIALS,
+  Material,
+} from "../simulation/materials";
 import { Simulation } from "../simulation/Simulation";
 import { renderSimulation } from "./renderSimulation";
 
@@ -28,4 +31,20 @@ describe("renderSimulation", () => {
 
     expect(Array.from(imageData.data)).toEqual([0, 0, 0, 0]);
   });
+
+  it.each(DRAWABLE_MATERIALS)(
+    "renders $label with its catalog color",
+    ({ material, colors }) => {
+      const simulation = new Simulation(2, 1, () => 0);
+      simulation.paintCircle(1, 0, 0, material);
+      const imageData = new ImageData(2, 1);
+
+      renderSimulation(simulation, imageData);
+
+      expect(Array.from(imageData.data.slice(4, 8))).toEqual([
+        ...colors[1 % colors.length],
+        255,
+      ]);
+    },
+  );
 });
