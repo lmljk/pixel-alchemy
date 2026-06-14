@@ -127,8 +127,13 @@ export function SandboxCanvas({
 
     activePointerIdRef.current = event.pointerId;
     previousPointRef.current = point;
-    event.currentTarget.setPointerCapture(event.pointerId);
     paintPoint(point);
+
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    } catch {
+      // Pointer capture can be unavailable or rejected without ending the stroke.
+    }
   };
 
   const handlePointerMove = (
@@ -139,8 +144,15 @@ export function SandboxCanvas({
     }
 
     const point = pointFromPointer(event);
+    if (!point) {
+      previousPointRef.current = null;
+      return;
+    }
+
     const previousPoint = previousPointRef.current;
-    if (!point || !previousPoint) {
+    if (!previousPoint) {
+      paintPoint(point);
+      previousPointRef.current = point;
       return;
     }
 

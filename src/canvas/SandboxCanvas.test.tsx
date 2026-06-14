@@ -25,9 +25,9 @@ describe("SandboxCanvas", () => {
     act(() => callback?.(timestamp));
   }
 
-  it("paints sand at the pointer position", () => {
-    const simulation = new Simulation(10, 10, () => 0);
-
+  function renderPointerCanvas(
+    simulation: Simulation,
+  ): HTMLCanvasElement {
     render(
       <SandboxCanvas
         simulation={simulation}
@@ -37,7 +37,9 @@ describe("SandboxCanvas", () => {
       />,
     );
 
-    const canvas = screen.getByRole("img", { name: "像素沙盒" });
+    const canvas = screen.getByRole("img", {
+      name: "像素沙盒",
+    }) as HTMLCanvasElement;
     vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
       x: 0,
       y: 0,
@@ -49,11 +51,25 @@ describe("SandboxCanvas", () => {
       height: 100,
       toJSON: () => ({}),
     });
-    const setPointerCapture = vi.fn();
+
+    return canvas;
+  }
+
+  function installPointerCapture(
+    canvas: HTMLCanvasElement,
+    implementation = vi.fn(),
+  ) {
     Object.defineProperty(canvas, "setPointerCapture", {
       configurable: true,
-      value: setPointerCapture,
+      value: implementation,
     });
+  }
+
+  it("paints sand at the pointer position", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const canvas = renderPointerCanvas(simulation);
+    const setPointerCapture = vi.fn();
+    installPointerCapture(canvas, setPointerCapture);
 
     fireEvent.pointerDown(canvas, {
       clientX: 55,
@@ -63,6 +79,150 @@ describe("SandboxCanvas", () => {
 
     expect(simulation.getCell(5, 5)).toBe(Material.Sand);
     expect(setPointerCapture).toHaveBeenCalledWith(7);
+  });
+
+  it("paints the first point when pointer capture is unavailable", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const canvas = renderPointerCanvas(simulation);
+    Object.defineProperty(canvas, "setPointerCapture", {
+      configurable: true,
+      value: undefined,
+    });
+
+    expect(() =>
+      fireEvent.pointerDown(canvas, {
+        clientX: 55,
+        clientY: 55,
+        pointerId: 7,
+      }),
+    ).not.toThrow();
+    expect(simulation.getCell(5, 5)).toBe(Material.Sand);
+  });
+
+  it("paints the first point when pointer capture throws", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const canvas = renderPointerCanvas(simulation);
+    installPointerCapture(
+      canvas,
+      vi.fn(() => {
+        throw new DOMException("Pointer capture failed");
+      }),
+    );
+
+    expect(() =>
+      fireEvent.pointerDown(canvas, {
+        clientX: 55,
+        clientY: 55,
+        pointerId: 7,
+      }),
+    ).not.toThrow();
+    expect(simulation.getCell(5, 5)).toBe(Material.Sand);
+  });
+
+  it("interpolates pointer movement across grid cells", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    const canvas = renderPointerCanvas(simulation);
+    installPointerCapture(canvas);
+
+    fireEvent.pointerDown(canvas, {
+      clientX: 15,
+      clientY: 15,
+      pointerId: 7,
+    });
+    paintCircle.mockClear();
+
+    fireEvent.pointerMove(canvas, {
+      clientX: 45,
+      clientY: 15,
+      pointerId: 7,
+    });
+
+    expect(
+      paintCircle.mock.calls.map(([x, y]) => ({ x, y })),
+    ).toEqual([
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 4, y: 1 },
+    ]);
+  });
+
+  it("restarts the stroke after moving outside the canvas", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    const canvas = renderPointerCanvas(simulation);
+    installPointerCapture(canvas);
+
+    fireEvent.pointerDown(canvas, {
+      clientX: 15,
+      clientY: 15,
+      pointerId: 7,
+    });
+    paintCircle.mockClear();
+
+    fireEvent.pointerMove(canvas, {
+      clientX: 105,
+      clientY: 15,
+      pointerId: 7,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 85,
+      clientY: 15,
+      pointerId: 7,
+    });
+
+    expect(paintCircle).toHaveBeenCalledTimes(1);
+    expect(paintCircle).toHaveBeenCalledWith(
+      8,
+      1,
+      2,
+      Material.Sand,
+    );
+  });
+
+  it("stops painting after pointer up", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    const canvas = renderPointerCanvas(simulation);
+    installPointerCapture(canvas);
+
+    fireEvent.pointerDown(canvas, {
+      clientX: 15,
+      clientY: 15,
+      pointerId: 7,
+    });
+    paintCircle.mockClear();
+    fireEvent.pointerUp(canvas, { pointerId: 7 });
+    fireEvent.pointerMove(canvas, {
+      clientX: 45,
+      clientY: 15,
+      pointerId: 7,
+    });
+
+    expect(paintCircle).not.toHaveBeenCalled();
+  });
+
+  it("stops painting after pointer cancel", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    const canvas = renderPointerCanvas(simulation);
+    installPointerCapture(canvas);
+
+    fireEvent.pointerDown(canvas, {
+      clientX: 15,
+      clientY: 15,
+      pointerId: 7,
+    });
+    paintCircle.mockClear();
+    fireEvent.pointerCancel(canvas, { pointerId: 7 });
+    fireEvent.pointerMove(canvas, {
+      clientX: 45,
+      clientY: 15,
+      pointerId: 7,
+    });
+
+    expect(paintCircle).not.toHaveBeenCalled();
   });
 
   it("does not step while paused", () => {
