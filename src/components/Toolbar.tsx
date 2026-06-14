@@ -16,7 +16,7 @@ export function Toolbar({
   onClear,
 }: ToolbarProps) {
   return (
-    <div className="toolbar" aria-label="沙盒工具">
+    <div className="toolbar" role="toolbar" aria-label="沙盒工具">
       <button
         className="tool-button tool-button--sand"
         type="button"

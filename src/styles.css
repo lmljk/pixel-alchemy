@@ -51,7 +51,7 @@ button {
 
 .experiment-label {
   flex: none;
-  color: #887763;
+  color: #67594c;
   font: 700 0.75rem/1.2 ui-monospace, monospace;
   letter-spacing: 0.12em;
 }
@@ -71,6 +71,11 @@ button {
   image-rendering: pixelated;
   touch-action: none;
   cursor: crosshair;
+}
+
+.sandbox-canvas:focus-visible {
+  outline: 3px solid #315f78;
+  outline-offset: 4px;
 }
 
 .toolbar {

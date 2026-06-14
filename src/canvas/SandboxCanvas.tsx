@@ -30,6 +30,7 @@ export function SandboxCanvas({
   const simulationRef = useRef<Simulation | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
   const previousPointRef = useRef<GridPoint | null>(null);
+  const keyboardPointRef = useRef<GridPoint | null>(null);
   const lastClearVersionRef = useRef(clearVersion);
 
   if (simulationRef.current === null) {
@@ -38,6 +39,13 @@ export function SandboxCanvas({
   }
 
   const activeSimulation = simulationRef.current;
+
+  if (keyboardPointRef.current === null) {
+    keyboardPointRef.current = {
+      x: Math.floor(activeSimulation.width / 2),
+      y: Math.floor(activeSimulation.height / 2),
+    };
+  }
 
   useEffect(() => {
     if (clearVersion === lastClearVersionRef.current) {
@@ -171,6 +179,37 @@ export function SandboxCanvas({
     previousPointRef.current = null;
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+    const point = keyboardPointRef.current;
+    if (!point) {
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowLeft":
+        event.preventDefault();
+        point.x = Math.max(0, point.x - 1);
+        break;
+      case "ArrowRight":
+        event.preventDefault();
+        point.x = Math.min(activeSimulation.width - 1, point.x + 1);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        point.y = Math.max(0, point.y - 1);
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        point.y = Math.min(activeSimulation.height - 1, point.y + 1);
+        break;
+      case " ":
+      case "Enter":
+        event.preventDefault();
+        paintPoint(point);
+        break;
+    }
+  };
+
   return (
     <canvas
       ref={canvasRef}
@@ -178,7 +217,10 @@ export function SandboxCanvas({
       height={activeSimulation.height}
       className="sandbox-canvas"
       aria-label="像素沙盒"
-      role="img"
+      aria-description="方向键移动笔尖，空格或回车绘制"
+      role="application"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={resetPointer}

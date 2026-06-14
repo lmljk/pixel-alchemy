@@ -5,6 +5,22 @@ import { Material } from "../simulation/materials";
 import { Toolbar } from "./Toolbar";
 
 describe("Toolbar", () => {
+  it("exposes the controls as a named toolbar", () => {
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("toolbar", { name: "沙盒工具" }),
+    ).toBeInTheDocument();
+  });
+
   it("marks sand as selected and changes the tool to the eraser", async () => {
     const user = userEvent.setup();
     const onToolChange = vi.fn();

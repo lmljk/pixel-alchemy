@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { App } from "./App";
 
@@ -14,5 +15,24 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "橡皮" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "暂停" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "清空" })).toBeInTheDocument();
+  });
+
+  it("updates the selected tool and pause control", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const sandButton = screen.getByRole("button", { name: "沙子" });
+    const eraserButton = screen.getByRole("button", { name: "橡皮" });
+
+    await user.click(eraserButton);
+
+    expect(sandButton).toHaveAttribute("aria-pressed", "false");
+    expect(eraserButton).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: "暂停" }));
+
+    expect(
+      screen.getByRole("button", { name: "继续" }),
+    ).toBeInTheDocument();
   });
 });

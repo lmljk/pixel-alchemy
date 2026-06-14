@@ -37,7 +37,7 @@ describe("SandboxCanvas", () => {
       />,
     );
 
-    const canvas = screen.getByRole("img", {
+    const canvas = screen.getByRole("application", {
       name: "像素沙盒",
     }) as HTMLCanvasElement;
     vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
@@ -64,6 +64,109 @@ describe("SandboxCanvas", () => {
       value: implementation,
     });
   }
+
+  it("is focusable and describes its keyboard controls", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+
+    render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+      />,
+    );
+
+    const canvas = screen.getByRole("application", {
+      name: "像素沙盒",
+    });
+
+    expect(canvas).toHaveAttribute("tabindex", "0");
+    expect(canvas).toHaveAttribute(
+      "aria-description",
+      "方向键移动笔尖，空格或回车绘制",
+    );
+
+    canvas.focus();
+    expect(canvas).toHaveFocus();
+  });
+
+  it("moves the keyboard cursor, paints, and erases with the active tool", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    const { rerender } = render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+      />,
+    );
+    const canvas = screen.getByRole("application", {
+      name: "像素沙盒",
+    });
+    canvas.focus();
+
+    expect(fireEvent.keyDown(canvas, { key: "ArrowRight" })).toBe(false);
+    expect(fireEvent.keyDown(canvas, { key: " " })).toBe(false);
+    expect(paintCircle).toHaveBeenLastCalledWith(
+      6,
+      5,
+      2,
+      Material.Sand,
+    );
+
+    rerender(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Empty}
+        paused
+        clearVersion={0}
+      />,
+    );
+    paintCircle.mockClear();
+
+    expect(fireEvent.keyDown(canvas, { key: "Enter" })).toBe(false);
+    expect(paintCircle).toHaveBeenCalledWith(
+      6,
+      5,
+      2,
+      Material.Empty,
+    );
+    expect(simulation.getCell(6, 5)).toBe(Material.Empty);
+  });
+
+  it("keeps arrow movement in bounds and ignores unrelated keys", () => {
+    const simulation = new Simulation(1, 1, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+
+    render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+      />,
+    );
+    const canvas = screen.getByRole("application", {
+      name: "像素沙盒",
+    });
+
+    for (const key of [
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+    ]) {
+      expect(fireEvent.keyDown(canvas, { key })).toBe(false);
+    }
+
+    expect(fireEvent.keyDown(canvas, { key: "a" })).toBe(true);
+    expect(paintCircle).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(canvas, { key: "Enter" });
+    expect(paintCircle).toHaveBeenCalledWith(0, 0, 2, Material.Sand);
+  });
 
   it("paints sand at the pointer position", () => {
     const simulation = new Simulation(10, 10, () => 0);
