@@ -34,6 +34,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
 
@@ -74,6 +75,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
 
@@ -100,6 +102,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
     const canvas = screen.getByRole("application", {
@@ -122,6 +125,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Empty}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
     paintCircle.mockClear();
@@ -146,6 +150,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
     const canvas = screen.getByRole("application", {
@@ -338,6 +343,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
 
@@ -357,6 +363,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused={false}
         clearVersion={0}
+        stepVersion={0}
       />,
     );
 
@@ -377,6 +384,7 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={0}
+        stepVersion={0}
       />,
     );
 
@@ -388,9 +396,125 @@ describe("SandboxCanvas", () => {
         tool={Material.Sand}
         paused
         clearVersion={1}
+        stepVersion={0}
       />,
     );
 
     expect(simulation.getCell(5, 5)).toBe(Material.Empty);
+  });
+
+  it("steps exactly once when paused stepVersion changes", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    const step = vi.spyOn(simulation, "step");
+    const { rerender } = render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={0}
+      />,
+    );
+
+    rerender(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={1}
+      />,
+    );
+
+    expect(step).toHaveBeenCalledTimes(1);
+  });
+
+  it("steps once for each paused stepVersion change", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    const step = vi.spyOn(simulation, "step");
+    const { rerender } = render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={0}
+      />,
+    );
+
+    for (const stepVersion of [1, 2]) {
+      rerender(
+        <SandboxCanvas
+          simulation={simulation}
+          tool={Material.Sand}
+          paused
+          clearVersion={0}
+          stepVersion={stepVersion}
+        />,
+      );
+    }
+
+    expect(step).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not manually step while running", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    const step = vi.spyOn(simulation, "step");
+    const { rerender } = render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused={false}
+        clearVersion={0}
+        stepVersion={0}
+      />,
+    );
+
+    rerender(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused={false}
+        clearVersion={0}
+        stepVersion={1}
+      />,
+    );
+
+    expect(step).not.toHaveBeenCalled();
+  });
+
+  it("does not step on initial mount or when only pause changes", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    const step = vi.spyOn(simulation, "step");
+    const { rerender } = render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={4}
+      />,
+    );
+
+    rerender(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused={false}
+        clearVersion={0}
+        stepVersion={4}
+      />,
+    );
+    rerender(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={4}
+      />,
+    );
+
+    expect(step).not.toHaveBeenCalled();
   });
 });

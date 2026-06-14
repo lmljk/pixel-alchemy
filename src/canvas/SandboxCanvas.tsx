@@ -17,6 +17,7 @@ interface SandboxCanvasProps {
   tool: Material;
   paused: boolean;
   clearVersion: number;
+  stepVersion: number;
   simulation?: Simulation;
 }
 
@@ -24,6 +25,7 @@ export function SandboxCanvas({
   tool,
   paused,
   clearVersion,
+  stepVersion,
   simulation,
 }: SandboxCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,6 +34,7 @@ export function SandboxCanvas({
   const previousPointRef = useRef<GridPoint | null>(null);
   const keyboardPointRef = useRef<GridPoint | null>(null);
   const lastClearVersionRef = useRef(clearVersion);
+  const lastStepVersionRef = useRef(stepVersion);
 
   if (simulationRef.current === null) {
     simulationRef.current =
@@ -55,6 +58,17 @@ export function SandboxCanvas({
     activeSimulation.clear();
     lastClearVersionRef.current = clearVersion;
   }, [activeSimulation, clearVersion]);
+
+  useEffect(() => {
+    if (stepVersion === lastStepVersionRef.current) {
+      return;
+    }
+
+    lastStepVersionRef.current = stepVersion;
+    if (paused) {
+      activeSimulation.step();
+    }
+  }, [activeSimulation, paused, stepVersion]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
