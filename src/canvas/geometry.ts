@@ -11,11 +11,11 @@ export interface RectLike {
 }
 
 export function clientPointToGrid(
-  clientX: number,
-  clientY: number,
   rect: RectLike,
   gridWidth: number,
   gridHeight: number,
+  clientX: number,
+  clientY: number,
 ): GridPoint | null {
   if (
     clientX < rect.left ||

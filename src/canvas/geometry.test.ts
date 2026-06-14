@@ -5,16 +5,15 @@ describe("clientPointToGrid", () => {
   const rect = { left: 10, top: 20, width: 320, height: 320 };
 
   it("maps a client point into grid coordinates", () => {
-    expect(clientPointToGrid(170, 180, rect, 160, 160)).toEqual({
+    expect(clientPointToGrid(rect, 160, 160, 170, 180)).toEqual({
       x: 80,
       y: 80,
     });
   });
 
   it("rejects points outside the canvas bounds", () => {
-    expect(clientPointToGrid(9, 180, rect, 160, 160)).toBeNull();
-    expect(clientPointToGrid(330, 180, rect, 160, 160)).toBeNull();
-    expect(clientPointToGrid(170, 340, rect, 160, 160)).toBeNull();
+    expect(clientPointToGrid(rect, 160, 160, 9, 20)).toBeNull();
+    expect(clientPointToGrid(rect, 160, 160, 330, 341)).toBeNull();
   });
 });
 
