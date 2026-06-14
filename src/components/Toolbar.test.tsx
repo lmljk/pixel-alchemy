@@ -16,6 +16,9 @@ describe("Toolbar", () => {
         onToolChange={vi.fn()}
         onPauseChange={vi.fn()}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -35,6 +38,9 @@ describe("Toolbar", () => {
         onToolChange={onToolChange}
         onPauseChange={vi.fn()}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -59,6 +65,9 @@ describe("Toolbar", () => {
         onToolChange={onToolChange}
         onPauseChange={vi.fn()}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -81,6 +90,9 @@ describe("Toolbar", () => {
         onToolChange={vi.fn()}
         onPauseChange={vi.fn()}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -102,6 +114,9 @@ describe("Toolbar", () => {
         onToolChange={vi.fn()}
         onPauseChange={vi.fn()}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -127,6 +142,9 @@ describe("Toolbar", () => {
         onToolChange={vi.fn()}
         onPauseChange={onPauseChange}
         onClear={onClear}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
@@ -148,11 +166,96 @@ describe("Toolbar", () => {
         onToolChange={vi.fn()}
         onPauseChange={onPauseChange}
         onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
       />,
     );
 
     await user.click(screen.getByRole("button", { name: "继续" }));
 
     expect(onPauseChange).toHaveBeenCalledWith(false);
+  });
+
+  it("disables single step while running", () => {
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "单步" })).toBeDisabled();
+  });
+
+  it("steps once while paused", async () => {
+    const user = userEvent.setup();
+    const onStep = vi.fn();
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={onStep}
+        onShare={vi.fn()}
+        shareStatus="idle"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "单步" }));
+
+    expect(onStep).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares and announces successful copying", async () => {
+    const user = userEvent.setup();
+    const onShare = vi.fn();
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={onShare}
+        shareStatus="copied"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "已复制" }));
+
+    expect(onShare).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "分享链接已复制",
+    );
+  });
+
+  it("announces clipboard failure", () => {
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="failed"
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "复制失败" })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "复制失败，请确认浏览器允许访问剪贴板",
+    );
   });
 });
