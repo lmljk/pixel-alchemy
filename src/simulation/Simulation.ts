@@ -4,6 +4,7 @@ type RandomSource = () => number;
 
 export class Simulation {
   readonly cells: Uint8Array;
+  private readonly processed: Uint8Array;
   private scanLeftToRight = true;
 
   constructor(
@@ -12,6 +13,7 @@ export class Simulation {
     private readonly random: RandomSource = Math.random,
   ) {
     this.cells = new Uint8Array(width * height);
+    this.processed = new Uint8Array(width * height);
   }
 
   getCell(x: number, y: number): Material | undefined {
@@ -42,7 +44,8 @@ export class Simulation {
   }
 
   step(): void {
-    let leftToRight = this.scanLeftToRight;
+    const leftToRight = this.scanLeftToRight;
+    this.processed.fill(0);
 
     for (let y = this.height - 2; y >= 0; y -= 1) {
       const startX = leftToRight ? 0 : this.width - 1;
@@ -50,18 +53,30 @@ export class Simulation {
       const stepX = leftToRight ? 1 : -1;
 
       for (let x = startX; x !== endX; x += stepX) {
-        if (this.getCell(x, y) !== Material.Sand) continue;
+        const index = this.indexOf(x, y);
+        if (this.processed[index]) continue;
 
-        if (this.tryMove(x, y, x, y + 1)) continue;
-
-        const diagonalOffsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
-        for (const offset of diagonalOffsets) {
-          if (this.tryMove(x, y, x + offset, y + 1)) break;
+        switch (this.getCell(x, y)) {
+          case Material.Sand:
+            this.stepSand(x, y);
+            break;
+          case Material.Stone:
+            this.tryMove(x, y, x, y + 1);
+            break;
         }
       }
     }
 
     this.scanLeftToRight = !this.scanLeftToRight;
+  }
+
+  private stepSand(x: number, y: number): void {
+    if (this.tryMove(x, y, x, y + 1)) return;
+
+    const diagonalOffsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
+    for (const offset of diagonalOffsets) {
+      if (this.tryMove(x, y, x + offset, y + 1)) return;
+    }
   }
 
   private tryMove(
@@ -80,6 +95,7 @@ export class Simulation {
     const toIndex = this.indexOf(toX, toY);
     this.cells[toIndex] = this.cells[fromIndex];
     this.cells[fromIndex] = Material.Empty;
+    this.processed[toIndex] = 1;
   }
 
   private isInBounds(x: number, y: number): boolean {

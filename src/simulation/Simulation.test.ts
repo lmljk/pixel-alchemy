@@ -139,4 +139,43 @@ describe("Simulation", () => {
     expect(simulation.getCell(0, -1)).toBeUndefined();
     expect(simulation.getCell(0, 3)).toBeUndefined();
   });
+
+  it("keeps walls fixed", () => {
+    const simulation = new Simulation(3, 4, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Wall);
+  });
+
+  it("moves stone only straight down", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Stone);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+    expect(simulation.getCell(1, 2)).toBe(Material.Stone);
+  });
+
+  it("does not slide stone diagonally", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Stone);
+    simulation.paintCircle(1, 2, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Stone);
+  });
+
+  it("moves a falling particle at most once per step", () => {
+    const simulation = new Simulation(3, 4, () => 0);
+    simulation.paintCircle(1, 0, 0, Material.Stone);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Stone);
+    expect(simulation.getCell(1, 2)).toBe(Material.Empty);
+  });
 });
