@@ -47,7 +47,7 @@ export class Simulation {
     const leftToRight = this.scanLeftToRight;
     this.processed.fill(0);
 
-    for (let y = this.height - 2; y >= 0; y -= 1) {
+    for (let y = this.height - 1; y >= 0; y -= 1) {
       const startX = leftToRight ? 0 : this.width - 1;
       const endX = leftToRight ? this.width : -1;
       const stepX = leftToRight ? 1 : -1;
@@ -65,7 +65,14 @@ export class Simulation {
             break;
           case Material.Water:
           case Material.Oil:
-            this.stepLiquid(x, y, this.getCell(x, y) as Material.Water | Material.Oil);
+            this.stepLiquid(
+              x,
+              y,
+              this.getCell(x, y) as Material.Water | Material.Oil,
+            );
+            break;
+          case Material.Fire:
+            this.stepFire(x, y);
             break;
         }
       }
@@ -75,11 +82,47 @@ export class Simulation {
   }
 
   private stepSand(x: number, y: number): void {
+    if (y >= this.height - 1) return;
     if (this.tryMove(x, y, x, y + 1)) return;
 
     const diagonalOffsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
     for (const offset of diagonalOffsets) {
       if (this.tryMove(x, y, x + offset, y + 1)) return;
+    }
+  }
+
+  private stepFire(x: number, y: number): void {
+    const flammableNeighbors = this.neighbors4(x, y).filter(
+      ({ x: neighborX, y: neighborY }) => {
+        const material = this.getCell(neighborX, neighborY);
+        return (
+          material === Material.Wood ||
+          material === Material.Oil ||
+          material === Material.Plant
+        );
+      },
+    );
+
+    if (flammableNeighbors.length > 0) {
+      const targetIndex = Math.min(
+        Math.floor(this.random() * flammableNeighbors.length),
+        flammableNeighbors.length - 1,
+      );
+      const target = flammableNeighbors[targetIndex];
+      this.setMaterial(target.x, target.y, Material.Fire);
+    }
+
+    const fireRoll = this.random();
+    if (fireRoll < 0.18) {
+      this.setMaterial(x, y, Material.Empty);
+      return;
+    }
+
+    if (this.tryMove(x, y, x, y - 1)) return;
+
+    const offsets = fireRoll < 0.59 ? [-1, 1] : [1, -1];
+    for (const offset of offsets) {
+      if (this.tryMove(x, y, x + offset, y - 1)) return;
     }
   }
 
@@ -141,6 +184,25 @@ export class Simulation {
     this.cells[fromIndex] = target;
     this.processed[fromIndex] = 1;
     this.processed[toIndex] = 1;
+  }
+
+  private setMaterial(x: number, y: number, material: Material): void {
+    if (!this.isInBounds(x, y)) return;
+    const index = this.indexOf(x, y);
+    this.cells[index] = material;
+    this.processed[index] = 1;
+  }
+
+  private neighbors4(
+    x: number,
+    y: number,
+  ): Array<{ x: number; y: number }> {
+    return [
+      { x, y: y - 1 },
+      { x: x + 1, y },
+      { x, y: y + 1 },
+      { x: x - 1, y },
+    ].filter((point) => this.isInBounds(point.x, point.y));
   }
 
   private isInBounds(x: number, y: number): boolean {

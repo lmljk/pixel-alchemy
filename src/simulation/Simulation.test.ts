@@ -230,6 +230,8 @@ describe("Simulation", () => {
     const simulation = new Simulation(3, 3, sequenceRandom([0]));
     simulation.paintCircle(1, 1, 0, Material.Water);
     simulation.paintCircle(1, 2, 0, Material.Oil);
+    simulation.paintCircle(0, 2, 0, Material.Wall);
+    simulation.paintCircle(2, 2, 0, Material.Wall);
 
     simulation.step();
 
@@ -259,5 +261,96 @@ describe("Simulation", () => {
     simulation.step();
 
     expect(simulation.getCell(1, 2)).toBe(Material.Oil);
+  });
+
+  it.each([
+    ["wood", Material.Wood],
+    ["oil", Material.Oil],
+    ["plant", Material.Plant],
+  ])("ignites %s beside fire", (_name, material) => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, material);
+    simulation.paintCircle(1, 2, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Fire);
+  });
+
+  it("does not ignite a diagonal flammable cell", () => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, Material.Wood);
+    simulation.paintCircle(0, 0, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Wood);
+  });
+
+  it("lets fire ignite only one neighboring target per step", () => {
+    const simulation = new Simulation(
+      3,
+      3,
+      sequenceRandom([0.7, 0.9]),
+    );
+    simulation.paintCircle(1, 1, 0, Material.Fire);
+    simulation.paintCircle(1, 0, 0, Material.Wood);
+    simulation.paintCircle(2, 1, 0, Material.Wood);
+
+    simulation.step();
+
+    const ignited = [
+      simulation.getCell(1, 0),
+      simulation.getCell(2, 1),
+    ].filter((material) => material === Material.Fire);
+    expect(ignited).toHaveLength(1);
+  });
+
+  it("extinguishes fire below the lifetime threshold", () => {
+    const simulation = new Simulation(3, 3, () => 0.1);
+    simulation.paintCircle(1, 1, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+  });
+
+  it("moves surviving fire upward", () => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 0)).toBe(Material.Fire);
+  });
+
+  it("moves blocked fire up-left for a low surviving roll", () => {
+    const simulation = new Simulation(3, 3, () => 0.3);
+    simulation.paintCircle(1, 1, 0, Material.Fire);
+    simulation.paintCircle(1, 0, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(0, 0)).toBe(Material.Fire);
+  });
+
+  it("moves blocked fire up-right for a high roll", () => {
+    const simulation = new Simulation(3, 3, () => 0.8);
+    simulation.paintCircle(1, 1, 0, Material.Fire);
+    simulation.paintCircle(1, 0, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(2, 0)).toBe(Material.Fire);
+  });
+
+  it("moves fire at most once per step", () => {
+    const simulation = new Simulation(3, 4, () => 0.9);
+    simulation.paintCircle(1, 2, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Fire);
+    expect(simulation.getCell(1, 0)).toBe(Material.Empty);
   });
 });
