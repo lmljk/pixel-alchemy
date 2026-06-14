@@ -18,6 +18,19 @@ export function clientPointToGrid(
   clientY: number,
 ): GridPoint | null {
   if (
+    !Number.isFinite(rect.width) ||
+    rect.width <= 0 ||
+    !Number.isFinite(rect.height) ||
+    rect.height <= 0 ||
+    !Number.isInteger(gridWidth) ||
+    gridWidth <= 0 ||
+    !Number.isInteger(gridHeight) ||
+    gridHeight <= 0
+  ) {
+    return null;
+  }
+
+  if (
     clientX < rect.left ||
     clientY < rect.top ||
     clientX >= rect.left + rect.width ||
