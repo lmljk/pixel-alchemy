@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Material } from "./materials";
 import { Simulation } from "./Simulation";
+import { sequenceRandom } from "./testRandom";
 
 describe("Simulation", () => {
   it("starts with an empty grid", () => {
@@ -177,5 +178,86 @@ describe("Simulation", () => {
 
     expect(simulation.getCell(1, 1)).toBe(Material.Stone);
     expect(simulation.getCell(1, 2)).toBe(Material.Empty);
+  });
+
+  it("moves water straight down", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Water);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 2)).toBe(Material.Water);
+  });
+
+  it("moves water diagonally when the space below is blocked", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Water);
+    simulation.paintCircle(1, 2, 0, Material.Wall);
+    simulation.paintCircle(2, 2, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(0, 2)).toBe(Material.Water);
+  });
+
+  it("moves water horizontally when lower routes are blocked", () => {
+    const simulation = new Simulation(7, 3, () => 0);
+    simulation.paintCircle(3, 1, 0, Material.Water);
+    for (let x = 0; x < 7; x += 1) {
+      simulation.paintCircle(x, 2, 0, Material.Wall);
+    }
+
+    simulation.step();
+
+    expect(simulation.getCell(2, 1)).toBe(Material.Water);
+    expect(simulation.getCell(3, 1)).toBe(Material.Empty);
+  });
+
+  it("stops horizontal liquid flow at a blocking cell", () => {
+    const simulation = new Simulation(7, 3, () => 0);
+    simulation.paintCircle(3, 1, 0, Material.Water);
+    simulation.paintCircle(2, 1, 0, Material.Wall);
+    for (let x = 0; x < 7; x += 1) {
+      simulation.paintCircle(x, 2, 0, Material.Wall);
+    }
+
+    simulation.step();
+
+    expect(simulation.getCell(4, 1)).toBe(Material.Water);
+  });
+
+  it("swaps water downward through oil", () => {
+    const simulation = new Simulation(3, 3, sequenceRandom([0]));
+    simulation.paintCircle(1, 1, 0, Material.Water);
+    simulation.paintCircle(1, 2, 0, Material.Oil);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Oil);
+    expect(simulation.getCell(1, 2)).toBe(Material.Water);
+  });
+
+  it("does not swap oil downward through water", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Oil);
+    simulation.paintCircle(1, 2, 0, Material.Water);
+    simulation.paintCircle(0, 2, 0, Material.Wall);
+    simulation.paintCircle(2, 2, 0, Material.Wall);
+    simulation.paintCircle(0, 1, 0, Material.Wall);
+    simulation.paintCircle(2, 1, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Oil);
+    expect(simulation.getCell(1, 2)).toBe(Material.Water);
+  });
+
+  it("lets oil fall and flow like a liquid", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Oil);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 2)).toBe(Material.Oil);
   });
 });

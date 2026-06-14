@@ -63,6 +63,10 @@ export class Simulation {
           case Material.Stone:
             this.tryMove(x, y, x, y + 1);
             break;
+          case Material.Water:
+          case Material.Oil:
+            this.stepLiquid(x, y, this.getCell(x, y) as Material.Water | Material.Oil);
+            break;
         }
       }
     }
@@ -76,6 +80,37 @@ export class Simulation {
     const diagonalOffsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
     for (const offset of diagonalOffsets) {
       if (this.tryMove(x, y, x + offset, y + 1)) return;
+    }
+  }
+
+  private stepLiquid(
+    x: number,
+    y: number,
+    material: Material.Water | Material.Oil,
+  ): void {
+    if (
+      material === Material.Water &&
+      this.getCell(x, y + 1) === Material.Oil
+    ) {
+      this.swap(x, y, x, y + 1);
+      return;
+    }
+
+    if (this.tryMove(x, y, x, y + 1)) return;
+
+    const offsets = this.random() < 0.5 ? [-1, 1] : [1, -1];
+    for (const offset of offsets) {
+      if (this.tryMove(x, y, x + offset, y + 1)) return;
+    }
+
+    for (const offset of offsets) {
+      for (let distance = 1; distance <= 3; distance += 1) {
+        const targetX = x + offset * distance;
+        const target = this.getCell(targetX, y);
+        if (target === undefined || target !== Material.Empty) break;
+        this.move(x, y, targetX, y);
+        return;
+      }
     }
   }
 
@@ -95,6 +130,16 @@ export class Simulation {
     const toIndex = this.indexOf(toX, toY);
     this.cells[toIndex] = this.cells[fromIndex];
     this.cells[fromIndex] = Material.Empty;
+    this.processed[toIndex] = 1;
+  }
+
+  private swap(fromX: number, fromY: number, toX: number, toY: number): void {
+    const fromIndex = this.indexOf(fromX, fromY);
+    const toIndex = this.indexOf(toX, toY);
+    const target = this.cells[toIndex];
+    this.cells[toIndex] = this.cells[fromIndex];
+    this.cells[fromIndex] = target;
+    this.processed[fromIndex] = 1;
     this.processed[toIndex] = 1;
   }
 
