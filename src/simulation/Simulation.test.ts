@@ -353,4 +353,77 @@ describe("Simulation", () => {
     expect(simulation.getCell(1, 1)).toBe(Material.Fire);
     expect(simulation.getCell(1, 0)).toBe(Material.Empty);
   });
+
+  it("grows a plant into empty space by consuming adjacent water", () => {
+    const simulation = new Simulation(5, 5, () => 0);
+    simulation.paintCircle(2, 2, 0, Material.Plant);
+    simulation.paintCircle(2, 1, 0, Material.Water);
+    simulation.paintCircle(2, 0, 0, Material.Wall);
+    simulation.paintCircle(1, 1, 0, Material.Wall);
+    simulation.paintCircle(1, 2, 0, Material.Wall);
+    simulation.paintCircle(3, 2, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(2, 1)).toBe(Material.Empty);
+    expect(simulation.getCell(3, 1)).toBe(Material.Plant);
+  });
+
+  it("does not let a new plant grow again in the same step", () => {
+    const simulation = new Simulation(5, 5, () => 0);
+    simulation.paintCircle(2, 2, 0, Material.Plant);
+    simulation.paintCircle(2, 1, 0, Material.Water);
+    simulation.paintCircle(2, 0, 0, Material.Wall);
+    simulation.paintCircle(1, 1, 0, Material.Wall);
+    simulation.paintCircle(1, 2, 0, Material.Wall);
+    simulation.paintCircle(3, 2, 0, Material.Wall);
+    simulation.paintCircle(4, 1, 0, Material.Water);
+
+    simulation.step();
+
+    expect(
+      Array.from(simulation.cells).filter(
+        (material) => material === Material.Plant,
+      ),
+    ).toHaveLength(2);
+  });
+
+  it("ignites a plant before it can grow", () => {
+    const simulation = new Simulation(5, 5, () => 0.9);
+    simulation.paintCircle(2, 2, 0, Material.Plant);
+    simulation.paintCircle(2, 1, 0, Material.Water);
+    simulation.paintCircle(2, 3, 0, Material.Fire);
+
+    simulation.step();
+
+    expect(simulation.getCell(2, 2)).toBe(Material.Fire);
+    expect(
+      Array.from(simulation.cells).filter(
+        (material) => material === Material.Plant,
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("keeps a plant unchanged without adjacent water", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Plant);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Plant);
+  });
+
+  it("does not grow from diagonal-only water", () => {
+    const simulation = new Simulation(4, 4, () => 0);
+    simulation.paintCircle(2, 2, 0, Material.Plant);
+    simulation.paintCircle(1, 1, 0, Material.Water);
+
+    simulation.step();
+
+    expect(
+      Array.from(simulation.cells).filter(
+        (material) => material === Material.Plant,
+      ),
+    ).toHaveLength(1);
+  });
 });

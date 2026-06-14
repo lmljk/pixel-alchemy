@@ -74,6 +74,9 @@ export class Simulation {
           case Material.Fire:
             this.stepFire(x, y);
             break;
+          case Material.Plant:
+            this.stepPlant(x, y);
+            break;
         }
       }
     }
@@ -124,6 +127,26 @@ export class Simulation {
     for (const offset of offsets) {
       if (this.tryMove(x, y, x + offset, y - 1)) return;
     }
+  }
+
+  private stepPlant(x: number, y: number): void {
+    const waterNeighbors = this.neighbors4(x, y).filter(
+      ({ x: neighborX, y: neighborY }) =>
+        this.getCell(neighborX, neighborY) === Material.Water,
+    );
+    const water = this.choosePoint(waterNeighbors);
+    if (!water) return;
+
+    const growthTargets = this.neighbors4(water.x, water.y).filter(
+      (point) =>
+        (point.x !== x || point.y !== y) &&
+        this.getCell(point.x, point.y) === Material.Empty,
+    );
+    const target = this.choosePoint(growthTargets);
+    if (!target) return;
+
+    this.setMaterial(water.x, water.y, Material.Empty);
+    this.setMaterial(target.x, target.y, Material.Plant);
   }
 
   private stepLiquid(
@@ -203,6 +226,16 @@ export class Simulation {
       { x, y: y + 1 },
       { x: x - 1, y },
     ].filter((point) => this.isInBounds(point.x, point.y));
+  }
+
+  private choosePoint<T>(points: readonly T[]): T | undefined {
+    if (points.length === 0) return undefined;
+    if (points.length === 1) return points[0];
+    const index = Math.min(
+      Math.floor(this.random() * points.length),
+      points.length - 1,
+    );
+    return points[index];
   }
 
   private isInBounds(x: number, y: number): boolean {
