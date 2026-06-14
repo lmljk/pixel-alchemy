@@ -1,7 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { Material } from "../simulation/materials";
+import {
+  DRAWABLE_MATERIALS,
+  Material,
+} from "../simulation/materials";
 import { Toolbar } from "./Toolbar";
 
 describe("Toolbar", () => {
@@ -43,6 +46,52 @@ describe("Toolbar", () => {
     await user.click(screen.getByRole("button", { name: "橡皮" }));
 
     expect(onToolChange).toHaveBeenCalledWith(Material.Empty);
+  });
+
+  it("renders every material and changes the active tool to water", async () => {
+    const user = userEvent.setup();
+    const onToolChange = vi.fn();
+
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        onToolChange={onToolChange}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+
+    for (const definition of DRAWABLE_MATERIALS) {
+      expect(
+        screen.getByRole("button", { name: definition.label }),
+      ).toBeInTheDocument();
+    }
+
+    await user.click(screen.getByRole("button", { name: "水" }));
+
+    expect(onToolChange).toHaveBeenCalledWith(Material.Water);
+  });
+
+  it("marks only fire as selected when fire is active", () => {
+    render(
+      <Toolbar
+        tool={Material.Fire}
+        paused={false}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+
+    for (const definition of DRAWABLE_MATERIALS) {
+      expect(
+        screen.getByRole("button", { name: definition.label }),
+      ).toHaveAttribute(
+        "aria-pressed",
+        String(definition.material === Material.Fire),
+      );
+    }
   });
 
   it("marks the eraser as selected instead of sand", () => {
