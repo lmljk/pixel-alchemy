@@ -78,11 +78,25 @@ button {
   outline-offset: 4px;
 }
 
-.toolbar {
+.sandbox-controls {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 16px;
+}
+
+.material-palette {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 4px 6px 2px;
+  scrollbar-color: #897a68 #e4d9c9;
+  scrollbar-width: thin;
+}
+
+.simulation-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .tool-button {
@@ -94,6 +108,26 @@ button {
   background: #f7f0e5;
   box-shadow: 3px 3px 0 #cdbba3;
   cursor: pointer;
+}
+
+.material-button {
+  flex: 0 0 84px;
+  min-height: 58px;
+  padding-block: 6px;
+}
+
+.material-swatch {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0 auto 5px;
+  border: 1px solid #67594c;
+  background: var(--material-color);
+}
+
+.material-button--empty .material-swatch {
+  background: #faf5ec;
+  box-shadow: inset 0 0 0 3px #c8b79f;
 }
 
 .tool-button:hover {
@@ -135,9 +169,17 @@ button {
     box-shadow: 4px 4px 0 #c8b79f;
   }
 
-  .toolbar {
+  .sandbox-controls {
     gap: 6px;
     margin-top: 12px;
+  }
+
+  .material-palette {
+    gap: 6px;
+  }
+
+  .material-button {
+    flex-basis: 76px;
   }
 
   .tool-button {
