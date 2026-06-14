@@ -1,6 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { App } from "./App";
 import { encodeShareState } from "./sharing/shareState";
 import {
@@ -15,6 +27,10 @@ describe("App", () => {
       configurable: true,
       value: undefined,
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("renders the title, sandbox, and day three controls", () => {
@@ -119,6 +135,27 @@ describe("App", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "分享" }));
+
+    expect(
+      screen.getByRole("button", { name: "复制失败" }),
+    ).toBeInTheDocument();
+  });
+
+  it("reports when the clipboard request never settles", async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn(
+      () => new Promise<void>(() => undefined),
+    );
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "分享" }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
 
     expect(
       screen.getByRole("button", { name: "复制失败" }),

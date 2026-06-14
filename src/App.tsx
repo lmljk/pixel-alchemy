@@ -17,6 +17,7 @@ import { Simulation } from "./simulation/Simulation";
 import { Material } from "./simulation/materials";
 
 const DEFAULT_GRID_SIZE = 160;
+const CLIPBOARD_TIMEOUT_MS = 1500;
 const SHARE_STATUS_DURATION_MS = 2000;
 
 type SandboxSession = {
@@ -51,6 +52,34 @@ function createSession(hash: string): SandboxSession {
   };
 }
 
+function writeClipboardWithTimeout(text: string): Promise<void> {
+  const clipboard = navigator.clipboard;
+  if (!clipboard?.writeText) {
+    return Promise.reject(new Error("Clipboard unavailable"));
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeoutId);
+      callback();
+    };
+    const timeoutId = window.setTimeout(
+      () => finish(() => reject(new Error("Clipboard timed out"))),
+      CLIPBOARD_TIMEOUT_MS,
+    );
+
+    Promise.resolve()
+      .then(() => clipboard.writeText(text))
+      .then(
+        () => finish(resolve),
+        (error: unknown) => finish(() => reject(error)),
+      );
+  });
+}
+
 export function App() {
   const [session] = useState(() => createSession(window.location.hash));
   const [tool, setTool] = useState(Material.Sand);
@@ -74,16 +103,12 @@ export function App() {
 
   const handleShare = async () => {
     try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("Clipboard unavailable");
-      }
-
       const payload = encodeShareState({
         ...session.simulation.createSnapshot(),
         randomState: session.random.getState(),
       });
       const url = buildShareUrl(window.location.href, payload);
-      await navigator.clipboard.writeText(url);
+      await writeClipboardWithTimeout(url);
       setShareStatus("copied");
     } catch {
       setShareStatus("failed");
