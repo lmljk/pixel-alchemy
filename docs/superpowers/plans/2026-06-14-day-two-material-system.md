@@ -372,15 +372,14 @@ Add a reusable bounded four-neighbor collector with this stable order:
 ]
 ```
 
-For Wood, Oil, and Plant, check adjacent Fire before normal behavior and convert the current cell to Fire.
-
 For Fire:
 
 1. Collect flammable neighbors.
 2. If non-empty, use one random value to select `Math.floor(value * count)`, clamped to `count - 1`, and convert that neighbor to Fire.
-3. Read `fireRoll`.
-4. Clear when `< 0.18`.
-5. Otherwise try up, then the two diagonals using the specified `0.59` split.
+3. Mark the selected target processed so it cannot act again this step.
+4. Read `fireRoll`.
+5. Clear when `< 0.18`.
+6. Otherwise try up, then the two diagonals using the specified `0.59` split.
 
 Mark newly ignited and moved cells processed.
 
@@ -436,7 +435,7 @@ Expected: growth tests fail.
 
 For each Plant:
 
-1. Fire reaction already runs first.
+1. Skip the cell when a Fire handler has already ignited and marked it.
 2. Collect adjacent Water cells in stable four-neighbor order.
 3. Use random only when more than one water candidate exists.
 4. For the selected water, collect its empty four-neighbors excluding the source plant.
