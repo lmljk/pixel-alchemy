@@ -29,6 +29,27 @@ describe("Toolbar", () => {
     expect(onToolChange).toHaveBeenCalledWith(Material.Empty);
   });
 
+  it("marks the eraser as selected instead of sand", () => {
+    render(
+      <Toolbar
+        tool={Material.Empty}
+        paused={false}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "沙子" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "橡皮" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("pauses a running simulation and clears it", async () => {
     const user = userEvent.setup();
     const onPauseChange = vi.fn();
@@ -49,5 +70,24 @@ describe("Toolbar", () => {
 
     expect(onPauseChange).toHaveBeenCalledWith(true);
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumes a paused simulation", async () => {
+    const user = userEvent.setup();
+    const onPauseChange = vi.fn();
+
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused
+        onToolChange={vi.fn()}
+        onPauseChange={onPauseChange}
+        onClear={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "继续" }));
+
+    expect(onPauseChange).toHaveBeenCalledWith(false);
   });
 });
