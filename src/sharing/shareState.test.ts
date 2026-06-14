@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Material } from "../simulation/materials";
+import { SeededRandom } from "../simulation/SeededRandom";
+import { Simulation } from "../simulation/Simulation";
 import {
   buildShareUrl,
   decodeShareState,
@@ -174,5 +176,33 @@ describe("shareState", () => {
       "https://example.com/sandbox?mode=demo#share=abc_123",
     );
     expect(href).toBe("https://example.com/sandbox?mode=demo#old");
+  });
+
+  it("preserves the future simulation trajectory after restoration", () => {
+    const sourceRandom = new SeededRandom(987654321);
+    const source = new Simulation(5, 5, sourceRandom.next);
+    source.paintCircle(2, 1, 0, Material.Sand);
+    source.paintCircle(1, 2, 0, Material.Water);
+    source.paintCircle(3, 2, 0, Material.Oil);
+    source.paintCircle(2, 3, 0, Material.Wood);
+    source.step();
+
+    const state: SharedState = {
+      ...source.createSnapshot(),
+      randomState: sourceRandom.getState(),
+    };
+    const decoded = decodeShareState(encodeShareState(state));
+    const firstRandom = new SeededRandom(decoded.randomState);
+    const secondRandom = new SeededRandom(decoded.randomState);
+    const first = Simulation.fromSnapshot(decoded, firstRandom.next);
+    const second = Simulation.fromSnapshot(decoded, secondRandom.next);
+
+    for (let step = 0; step < 20; step += 1) {
+      first.step();
+      second.step();
+    }
+
+    expect(first.createSnapshot()).toEqual(second.createSnapshot());
+    expect(firstRandom.getState()).toBe(secondRandom.getState());
   });
 });
