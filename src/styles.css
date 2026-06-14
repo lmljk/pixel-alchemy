@@ -95,7 +95,7 @@ button {
 
 .simulation-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -134,6 +134,22 @@ button {
   background: #fffaf1;
 }
 
+.tool-button:disabled {
+  color: #8b8177;
+  background: #e5ddd1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.tool-button:disabled:hover {
+  background: #e5ddd1;
+}
+
+.tool-button:disabled:active {
+  transform: none;
+  box-shadow: none;
+}
+
 .tool-button:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 #cdbba3;
@@ -152,6 +168,18 @@ button {
 .tool-button:focus-visible {
   outline: 3px solid #315f78;
   outline-offset: 3px;
+}
+
+.control-status,
+.load-status {
+  min-height: 1.1rem;
+  margin: 0;
+  color: #67594c;
+  font: 600 0.82rem/1.25 system-ui, sans-serif;
+}
+
+.load-status {
+  margin-top: 14px;
 }
 
 @media (max-width: 520px) {
@@ -180,6 +208,10 @@ button {
 
   .material-button {
     flex-basis: 76px;
+  }
+
+  .simulation-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .tool-button {
