@@ -16,4 +16,16 @@ describe("renderSimulation", () => {
       217, 157, 70, 255,
     ]);
   });
+
+  it("clears every color channel when reusing image data for an empty cell", () => {
+    const simulation = new Simulation(1, 1, () => 0);
+    const imageData = new ImageData(1, 1);
+    simulation.paintCircle(0, 0, 0, Material.Sand);
+    renderSimulation(simulation, imageData);
+
+    simulation.paintCircle(0, 0, 0, Material.Empty);
+    renderSimulation(simulation, imageData);
+
+    expect(Array.from(imageData.data)).toEqual([0, 0, 0, 0]);
+  });
 });

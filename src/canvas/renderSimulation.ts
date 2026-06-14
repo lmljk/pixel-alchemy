@@ -14,6 +14,9 @@ export function renderSimulation(
   for (let index = 0; index < simulation.cells.length; index += 1) {
     const pixel = index * 4;
     if (simulation.cells[index] === Material.Empty) {
+      imageData.data[pixel] = 0;
+      imageData.data[pixel + 1] = 0;
+      imageData.data[pixel + 2] = 0;
       imageData.data[pixel + 3] = 0;
       continue;
     }
