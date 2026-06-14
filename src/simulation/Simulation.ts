@@ -2,6 +2,13 @@ import { Material } from "./materials";
 
 type RandomSource = () => number;
 
+export type SimulationSnapshot = {
+  width: number;
+  height: number;
+  cells: Uint8Array;
+  scanLeftToRight: boolean;
+};
+
 export class Simulation {
   readonly cells: Uint8Array;
   private readonly processed: Uint8Array;
@@ -14,6 +21,33 @@ export class Simulation {
   ) {
     this.cells = new Uint8Array(width * height);
     this.processed = new Uint8Array(width * height);
+  }
+
+  static fromSnapshot(
+    snapshot: SimulationSnapshot,
+    random: RandomSource = Math.random,
+  ): Simulation {
+    if (snapshot.cells.length !== snapshot.width * snapshot.height) {
+      throw new Error("Snapshot dimensions do not match its grid");
+    }
+
+    const simulation = new Simulation(
+      snapshot.width,
+      snapshot.height,
+      random,
+    );
+    simulation.cells.set(snapshot.cells);
+    simulation.scanLeftToRight = snapshot.scanLeftToRight;
+    return simulation;
+  }
+
+  createSnapshot(): SimulationSnapshot {
+    return {
+      width: this.width,
+      height: this.height,
+      cells: this.cells.slice(),
+      scanLeftToRight: this.scanLeftToRight,
+    };
   }
 
   getCell(x: number, y: number): Material | undefined {

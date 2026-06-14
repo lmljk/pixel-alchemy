@@ -426,4 +426,59 @@ describe("Simulation", () => {
       ),
     ).toHaveLength(1);
   });
+
+  it("creates an isolated snapshot with the next scan direction", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Sand);
+    simulation.step();
+
+    const snapshot = simulation.createSnapshot();
+    snapshot.cells.fill(Material.Fire);
+
+    expect(snapshot.scanLeftToRight).toBe(false);
+    expect(simulation.cells).not.toEqual(snapshot.cells);
+  });
+
+  it("restores cells and scan direction without sharing the input buffer", () => {
+    const cells = new Uint8Array([
+      Material.Sand,
+      Material.Empty,
+      Material.Sand,
+    ]);
+    const simulation = Simulation.fromSnapshot(
+      {
+        width: 3,
+        height: 1,
+        cells,
+        scanLeftToRight: false,
+      },
+      () => 0,
+    );
+    cells.fill(Material.Fire);
+
+    expect(simulation.createSnapshot()).toEqual({
+      width: 3,
+      height: 1,
+      cells: new Uint8Array([
+        Material.Sand,
+        Material.Empty,
+        Material.Sand,
+      ]),
+      scanLeftToRight: false,
+    });
+  });
+
+  it("rejects snapshots whose dimensions do not match the grid", () => {
+    expect(() =>
+      Simulation.fromSnapshot(
+        {
+          width: 2,
+          height: 2,
+          cells: new Uint8Array(3),
+          scanLeftToRight: true,
+        },
+        () => 0,
+      ),
+    ).toThrow("Snapshot dimensions do not match its grid");
+  });
 });
