@@ -114,6 +114,9 @@ export class Simulation {
           case Material.Steam:
             this.stepSteam(x, y);
             break;
+          case Material.Lava:
+            this.stepLava(x, y);
+            break;
         }
       }
     }
@@ -201,10 +204,41 @@ export class Simulation {
     }
   }
 
+  private stepLava(x: number, y: number): void {
+    const water = this.choosePoint(
+      this.neighbors4(x, y).filter(
+        (point) => this.getCell(point.x, point.y) === Material.Water,
+      ),
+    );
+    if (water) {
+      this.setMaterial(water.x, water.y, Material.Steam);
+      this.setMaterial(x, y, Material.Stone);
+      return;
+    }
+
+    const flammable = this.choosePoint(
+      this.neighbors4(x, y).filter(({ x: neighborX, y: neighborY }) => {
+        const material = this.getCell(neighborX, neighborY);
+        return (
+          material === Material.Wood ||
+          material === Material.Oil ||
+          material === Material.Plant
+        );
+      }),
+    );
+    if (flammable) {
+      this.setMaterial(flammable.x, flammable.y, Material.Fire);
+      return;
+    }
+
+    if (this.random() >= 0.35) return;
+    this.stepLiquid(x, y, Material.Lava);
+  }
+
   private stepLiquid(
     x: number,
     y: number,
-    material: Material.Water | Material.Oil,
+    material: Material.Water | Material.Oil | Material.Lava,
   ): void {
     if (
       material === Material.Water &&

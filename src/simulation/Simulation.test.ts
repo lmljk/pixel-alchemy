@@ -394,6 +394,52 @@ describe("Simulation", () => {
     expect(simulation.getCell(2, 0)).toBe(Material.Steam);
   });
 
+  it("turns lava into stone and neighboring water into steam", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Lava);
+    simulation.paintCircle(1, 0, 0, Material.Water);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Stone);
+    expect(simulation.getCell(1, 0)).toBe(Material.Steam);
+  });
+
+  it.each([
+    ["wood", Material.Wood],
+    ["oil", Material.Oil],
+    ["plant", Material.Plant],
+  ])("lets lava ignite neighboring %s", (_name, material) => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Lava);
+    simulation.paintCircle(1, 0, 0, material);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 0)).toBe(Material.Fire);
+    expect(simulation.getCell(1, 1)).toBe(Material.Lava);
+  });
+
+  it("keeps lava still when the slow movement roll is high", () => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, Material.Lava);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Lava);
+    expect(simulation.getCell(1, 2)).toBe(Material.Empty);
+  });
+
+  it("lets lava flow when the slow movement roll is low", () => {
+    const simulation = new Simulation(3, 3, () => 0.1);
+    simulation.paintCircle(1, 1, 0, Material.Lava);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 2)).toBe(Material.Lava);
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+  });
+
   it("grows a plant into empty space by consuming adjacent water", () => {
     const simulation = new Simulation(5, 5, () => 0);
     simulation.paintCircle(2, 2, 0, Material.Plant);
