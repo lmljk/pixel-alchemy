@@ -82,6 +82,32 @@ describe("Toolbar", () => {
     expect(onToolChange).toHaveBeenCalledWith(Material.Water);
   });
 
+  it("selects the day four materials from the material palette", async () => {
+    const user = userEvent.setup();
+    const onToolChange = vi.fn();
+
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        onToolChange={onToolChange}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "蒸汽" }));
+    await user.click(screen.getByRole("button", { name: "熔岩" }));
+    await user.click(screen.getByRole("button", { name: "酸液" }));
+
+    expect(onToolChange).toHaveBeenNthCalledWith(1, Material.Steam);
+    expect(onToolChange).toHaveBeenNthCalledWith(2, Material.Lava);
+    expect(onToolChange).toHaveBeenNthCalledWith(3, Material.Acid);
+  });
+
   it("marks only fire as selected when fire is active", () => {
     render(
       <Toolbar

@@ -119,7 +119,7 @@ export function App() {
     <main className="app-shell">
       <header className="app-header">
         <h1>像素炼金术</h1>
-        <span className="experiment-label">试验 03</span>
+        <span className="experiment-label">试验 04</span>
       </header>
 
       <section className="sandbox-frame" aria-label="沙盒实验区">

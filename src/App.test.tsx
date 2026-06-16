@@ -33,13 +33,13 @@ describe("App", () => {
     vi.useRealTimers();
   });
 
-  it("renders the title, sandbox, and day three controls", () => {
+  it("renders the title, sandbox, and day four controls", () => {
     render(<App />);
 
     expect(
       screen.getByRole("heading", { name: "像素炼金术" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("试验 03")).toBeInTheDocument();
+    expect(screen.getByText("试验 04")).toBeInTheDocument();
     expect(screen.getByLabelText("像素沙盒")).toBeInTheDocument();
     for (const definition of DRAWABLE_MATERIALS) {
       expect(
