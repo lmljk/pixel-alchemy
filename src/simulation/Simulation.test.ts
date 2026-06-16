@@ -440,6 +440,58 @@ describe("Simulation", () => {
     expect(simulation.getCell(1, 1)).toBe(Material.Empty);
   });
 
+  it.each([
+    ["wall", Material.Wall],
+    ["stone", Material.Stone],
+    ["wood", Material.Wood],
+    ["plant", Material.Plant],
+  ])("lets acid corrode %s and disappear", (_name, material) => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Acid);
+    simulation.paintCircle(1, 0, 0, material);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+    expect(simulation.getCell(1, 0)).toBe(Material.Empty);
+  });
+
+  it.each([
+    ["sand", Material.Sand],
+    ["water", Material.Water],
+    ["oil", Material.Oil],
+    ["fire", Material.Fire],
+    ["steam", Material.Steam],
+    ["lava", Material.Lava],
+    ["acid", Material.Acid],
+  ])("does not let acid corrode %s", (_name, material) => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, Material.Acid);
+    simulation.paintCircle(1, 0, 0, material);
+    simulation.paintCircle(0, 0, 0, Material.Sand);
+    simulation.paintCircle(2, 0, 0, Material.Sand);
+    simulation.paintCircle(0, 1, 0, Material.Sand);
+    simulation.paintCircle(2, 1, 0, Material.Sand);
+    simulation.paintCircle(0, 2, 0, Material.Sand);
+    simulation.paintCircle(1, 2, 0, Material.Sand);
+    simulation.paintCircle(2, 2, 0, Material.Sand);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 0)).toBe(material);
+    expect(simulation.getCell(1, 1)).toBe(Material.Acid);
+  });
+
+  it("lets acid flow like a liquid when there is nothing to corrode", () => {
+    const simulation = new Simulation(3, 3, () => 0);
+    simulation.paintCircle(1, 1, 0, Material.Acid);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 2)).toBe(Material.Acid);
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+  });
+
   it("grows a plant into empty space by consuming adjacent water", () => {
     const simulation = new Simulation(5, 5, () => 0);
     simulation.paintCircle(2, 2, 0, Material.Plant);

@@ -117,6 +117,9 @@ export class Simulation {
           case Material.Lava:
             this.stepLava(x, y);
             break;
+          case Material.Acid:
+            this.stepAcid(x, y);
+            break;
         }
       }
     }
@@ -235,10 +238,36 @@ export class Simulation {
     this.stepLiquid(x, y, Material.Lava);
   }
 
+  private stepAcid(x: number, y: number): void {
+    const target = this.choosePoint(
+      this.neighbors4(x, y).filter(({ x: neighborX, y: neighborY }) => {
+        const material = this.getCell(neighborX, neighborY);
+        return (
+          material === Material.Wall ||
+          material === Material.Stone ||
+          material === Material.Wood ||
+          material === Material.Plant
+        );
+      }),
+    );
+
+    if (target) {
+      this.setMaterial(target.x, target.y, Material.Empty);
+      this.setMaterial(x, y, Material.Empty);
+      return;
+    }
+
+    this.stepLiquid(x, y, Material.Acid);
+  }
+
   private stepLiquid(
     x: number,
     y: number,
-    material: Material.Water | Material.Oil | Material.Lava,
+    material:
+      | Material.Water
+      | Material.Oil
+      | Material.Lava
+      | Material.Acid,
   ): void {
     if (
       material === Material.Water &&
