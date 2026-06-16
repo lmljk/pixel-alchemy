@@ -6,7 +6,10 @@ import {
 } from "./materials";
 
 describe("material catalog", () => {
-  it("keeps the eight drawable materials in a stable order", () => {
+  it("keeps the eleven drawable materials in a stable order", () => {
+    expect(Material.Steam).toBe(9);
+    expect(Material.Lava).toBe(10);
+    expect(Material.Acid).toBe(11);
     expect(
       DRAWABLE_MATERIALS.map(({ material }) => material),
     ).toEqual([
@@ -18,10 +21,13 @@ describe("material catalog", () => {
       Material.Oil,
       Material.Fire,
       Material.Plant,
+      Material.Steam,
+      Material.Lava,
+      Material.Acid,
     ]);
     expect(
       new Set(DRAWABLE_MATERIALS.map(({ material }) => material)).size,
-    ).toBe(8);
+    ).toBe(11);
   });
 
   it("defines labels and colors for every drawable material", () => {
@@ -37,6 +43,9 @@ describe("material catalog", () => {
     expect(getMaterialDefinition(Material.Oil).flammable).toBe(true);
     expect(getMaterialDefinition(Material.Plant).flammable).toBe(true);
     expect(getMaterialDefinition(Material.Wall).flammable).toBe(false);
+    expect(getMaterialDefinition(Material.Steam).flammable).toBe(false);
+    expect(getMaterialDefinition(Material.Lava).flammable).toBe(false);
+    expect(getMaterialDefinition(Material.Acid).flammable).toBe(false);
   });
 
   it("falls back to the empty definition for unknown values", () => {

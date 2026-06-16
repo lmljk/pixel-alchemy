@@ -8,6 +8,9 @@ export enum Material {
   Oil = 6,
   Fire = 7,
   Plant = 8,
+  Steam = 9,
+  Lava = 10,
+  Acid = 11,
 }
 
 export type MaterialCategory =
@@ -15,6 +18,7 @@ export type MaterialCategory =
   | "powder"
   | "liquid"
   | "solid"
+  | "gas"
   | "reaction";
 
 export type MaterialColor = readonly [number, number, number];
@@ -131,6 +135,42 @@ export const DRAWABLE_MATERIALS: readonly MaterialDefinition[] = [
       [63, 126, 62],
       [77, 145, 72],
       [49, 105, 51],
+    ],
+  },
+  {
+    material: Material.Steam,
+    label: "蒸汽",
+    cssName: "steam",
+    category: "gas",
+    flammable: false,
+    colors: [
+      [196, 220, 225],
+      [225, 238, 238],
+      [174, 205, 216],
+    ],
+  },
+  {
+    material: Material.Lava,
+    label: "熔岩",
+    cssName: "lava",
+    category: "liquid",
+    flammable: false,
+    colors: [
+      [204, 58, 38],
+      [236, 96, 31],
+      [255, 168, 55],
+    ],
+  },
+  {
+    material: Material.Acid,
+    label: "酸液",
+    cssName: "acid",
+    category: "liquid",
+    flammable: false,
+    colors: [
+      [135, 205, 51],
+      [175, 232, 66],
+      [91, 168, 47],
     ],
   },
 ] as const;
