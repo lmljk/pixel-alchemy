@@ -1,7 +1,7 @@
 import { Material } from "../simulation/materials";
 import type { SimulationSnapshot } from "../simulation/Simulation";
 
-const FORMAT_VERSION = 1;
+const FORMAT_VERSION = 2;
 const HEADER_BYTES = 10;
 const RUN_BYTES = 3;
 const MAX_GRID_SIZE = 160;
@@ -172,7 +172,7 @@ function validateMaterial(material: number): Material {
   if (
     !Number.isInteger(material) ||
     material < Material.Empty ||
-    material > Material.Plant
+    material > Material.Acid
   ) {
     throw new Error(`Unknown material: ${material}`);
   }

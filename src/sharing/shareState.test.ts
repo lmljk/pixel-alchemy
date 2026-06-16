@@ -51,21 +51,25 @@ function mutatePayload(
 describe("shareState", () => {
   it("round trips mixed cells, random state, and scan direction", () => {
     const state: SharedState = {
-      width: 3,
+      width: 4,
       height: 2,
       cells: new Uint8Array([
         Material.Sand,
-        Material.Sand,
         Material.Water,
+        Material.Steam,
+        Material.Lava,
+        Material.Acid,
         Material.Empty,
         Material.Fire,
-        Material.Fire,
+        Material.Plant,
       ]),
       randomState: 0xfedcba98,
       scanLeftToRight: false,
     };
+    const payload = encodeShareState(state);
 
-    expect(decodeShareState(encodeShareState(state))).toEqual(state);
+    expect(decodeShareState(payload)).toEqual(state);
+    expect(payloadBytes(payload)[0]).toBe(2);
   });
 
   it("round trips an empty grid and compresses repeated cells", () => {
@@ -90,7 +94,7 @@ describe("shareState", () => {
     const validPayload = encodeShareState(validState);
     const malformed = [
       mutatePayload(validPayload, (bytes) => {
-        bytes[0] = 2;
+        bytes[0] = 1;
       }),
       bytesPayload(payloadBytes(validPayload).slice(0, -1)),
       mutatePayload(validPayload, (bytes) => {
@@ -112,6 +116,17 @@ describe("shareState", () => {
     for (const payload of malformed) {
       expect(() => decodeShareState(payload)).toThrow();
     }
+  });
+
+  it("rejects material IDs above acid", () => {
+    const payload = encodeShareState(validState);
+    const invalidMaterial = mutatePayload(payload, (bytes) => {
+      bytes[10] = Material.Acid + 1;
+    });
+
+    expect(() => decodeShareState(invalidMaterial)).toThrow(
+      "Unknown material",
+    );
   });
 
   it.each([
