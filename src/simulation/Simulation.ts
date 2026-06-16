@@ -111,6 +111,9 @@ export class Simulation {
           case Material.Plant:
             this.stepPlant(x, y);
             break;
+          case Material.Steam:
+            this.stepSteam(x, y);
+            break;
         }
       }
     }
@@ -181,6 +184,21 @@ export class Simulation {
 
     this.setMaterial(water.x, water.y, Material.Empty);
     this.setMaterial(target.x, target.y, Material.Plant);
+  }
+
+  private stepSteam(x: number, y: number): void {
+    const steamRoll = this.random();
+    if (steamRoll < 0.08) {
+      this.setMaterial(x, y, Material.Water);
+      return;
+    }
+
+    if (this.tryMove(x, y, x, y - 1)) return;
+
+    const offsets = steamRoll < 0.54 ? [-1, 1] : [1, -1];
+    for (const offset of offsets) {
+      if (this.tryMove(x, y, x + offset, y - 1)) return;
+    }
   }
 
   private stepLiquid(

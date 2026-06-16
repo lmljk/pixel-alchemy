@@ -354,6 +354,46 @@ describe("Simulation", () => {
     expect(simulation.getCell(1, 0)).toBe(Material.Empty);
   });
 
+  it("moves steam upward when it does not condense", () => {
+    const simulation = new Simulation(3, 3, () => 0.9);
+    simulation.paintCircle(1, 1, 0, Material.Steam);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 0)).toBe(Material.Steam);
+    expect(simulation.getCell(1, 1)).toBe(Material.Empty);
+  });
+
+  it("condenses steam into water without moving the water in the same step", () => {
+    const simulation = new Simulation(3, 3, () => 0.05);
+    simulation.paintCircle(1, 1, 0, Material.Steam);
+
+    simulation.step();
+
+    expect(simulation.getCell(1, 1)).toBe(Material.Water);
+    expect(simulation.getCell(1, 2)).toBe(Material.Empty);
+  });
+
+  it("moves blocked steam up-left for a low roll", () => {
+    const simulation = new Simulation(3, 3, () => 0.2);
+    simulation.paintCircle(1, 1, 0, Material.Steam);
+    simulation.paintCircle(1, 0, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(0, 0)).toBe(Material.Steam);
+  });
+
+  it("moves blocked steam up-right for a high roll", () => {
+    const simulation = new Simulation(3, 3, () => 0.8);
+    simulation.paintCircle(1, 1, 0, Material.Steam);
+    simulation.paintCircle(1, 0, 0, Material.Wall);
+
+    simulation.step();
+
+    expect(simulation.getCell(2, 0)).toBe(Material.Steam);
+  });
+
   it("grows a plant into empty space by consuming adjacent water", () => {
     const simulation = new Simulation(5, 5, () => 0);
     simulation.paintCircle(2, 2, 0, Material.Plant);
