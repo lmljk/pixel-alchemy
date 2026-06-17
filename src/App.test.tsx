@@ -39,7 +39,20 @@ describe("App", () => {
     expect(
       screen.getByRole("heading", { name: "像素炼金术" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("试验 04")).toBeInTheDocument();
+    expect(screen.getByText("试验 05")).toBeInTheDocument();
+    expect(
+      screen.getByText("选择材料，在画布上绘制；暂停后可单步观察。"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "熔岩遇水成石并产蒸汽，酸液会腐蚀墙、石头、木头和植物。",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "分享会复制当前画布和随机状态；需要 HTTPS 或 localhost 剪贴板权限。",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("像素沙盒")).toBeInTheDocument();
     for (const definition of DRAWABLE_MATERIALS) {
       expect(

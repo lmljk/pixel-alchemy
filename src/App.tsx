@@ -119,8 +119,14 @@ export function App() {
     <main className="app-shell">
       <header className="app-header">
         <h1>像素炼金术</h1>
-        <span className="experiment-label">试验 04</span>
+        <span className="experiment-label">试验 05</span>
       </header>
+
+      <section className="intro-card" aria-label="玩法说明">
+        <p>选择材料，在画布上绘制；暂停后可单步观察。</p>
+        <p>熔岩遇水成石并产蒸汽，酸液会腐蚀墙、石头、木头和植物。</p>
+        <p>分享会复制当前画布和随机状态；需要 HTTPS 或 localhost 剪贴板权限。</p>
+      </section>
 
       <section className="sandbox-frame" aria-label="沙盒实验区">
         <SandboxCanvas
