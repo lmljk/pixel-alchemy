@@ -94,6 +94,27 @@ button {
   outline-offset: 4px;
 }
 
+.scene-guidance {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #897a68;
+  color: #514538;
+  background: #fff8ea;
+  box-shadow: 3px 3px 0 #cdbba3;
+  font: 600 0.88rem/1.4 system-ui, sans-serif;
+}
+
+.scene-guidance p {
+  margin: 0;
+}
+
+.scene-guidance-title {
+  color: #3f3328;
+  font-weight: 800;
+}
+
 .sandbox-controls {
   display: grid;
   gap: 10px;

@@ -15,6 +15,7 @@ import {
 } from "./simulation/SeededRandom";
 import { Simulation } from "./simulation/Simulation";
 import {
+  EXAMPLE_SCENES,
   applyExampleScene,
   type ExampleSceneId,
 } from "./simulation/exampleScenes";
@@ -91,8 +92,14 @@ export function App() {
   const [clearVersion, setClearVersion] = useState(0);
   const [stepVersion, setStepVersion] = useState(0);
   const [brushRadius, setBrushRadius] = useState(2);
+  const [activeSceneId, setActiveSceneId] =
+    useState<ExampleSceneId | null>(null);
   const [shareStatus, setShareStatus] =
     useState<ShareStatus>("idle");
+  const activeScene =
+    activeSceneId === null
+      ? undefined
+      : EXAMPLE_SCENES.find((scene) => scene.id === activeSceneId);
 
   useEffect(() => {
     if (shareStatus === "idle") {
@@ -122,7 +129,13 @@ export function App() {
 
   const handleExampleSceneSelect = (sceneId: ExampleSceneId) => {
     applyExampleScene(session.simulation, sceneId);
+    setActiveSceneId(sceneId);
     setPaused(true);
+  };
+
+  const handleClear = () => {
+    setActiveSceneId(null);
+    setClearVersion((version) => version + 1);
   };
 
   return (
@@ -149,6 +162,16 @@ export function App() {
         />
       </section>
 
+      {activeScene && (
+        <section className="scene-guidance" aria-label="示例说明">
+          <p className="scene-guidance-title">
+            当前示例：{activeScene.label}
+          </p>
+          <p>{activeScene.description}</p>
+          <p>建议：点“单步”慢慢观察反应。</p>
+        </section>
+      )}
+
       {session.loadError && (
         <p className="load-status" role="status">
           分享链接无效，已打开空白画布
@@ -163,7 +186,7 @@ export function App() {
         onExampleSceneSelect={handleExampleSceneSelect}
         onToolChange={setTool}
         onPauseChange={setPaused}
-        onClear={() => setClearVersion((version) => version + 1)}
+        onClear={handleClear}
         onStep={() => setStepVersion((version) => version + 1)}
         onShare={handleShare}
         shareStatus={shareStatus}

@@ -123,6 +123,40 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "单步" })).toBeEnabled();
   });
 
+  it("hides scene guidance until an example is selected", () => {
+    render(<App />);
+
+    expect(screen.queryByText("当前示例：熔岩遇水")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("建议：点“单步”慢慢观察反应。"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows guidance for the selected example scene", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "熔岩遇水" }));
+
+    expect(screen.getByText("当前示例：熔岩遇水")).toBeInTheDocument();
+    expect(
+      screen.getByText("熔岩遇水会变成石头，并冒出蒸汽。"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("建议：点“单步”慢慢观察反应。"),
+    ).toBeInTheDocument();
+  });
+
+  it("clears scene guidance when the canvas is cleared", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "熔岩遇水" }));
+    await user.click(screen.getByRole("button", { name: "清空" }));
+
+    expect(screen.queryByText("当前示例：熔岩遇水")).not.toBeInTheDocument();
+  });
+
   it("copies a share URL without changing the current address", async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
