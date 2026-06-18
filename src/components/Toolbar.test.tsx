@@ -1,10 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import {
   DRAWABLE_MATERIALS,
   Material,
 } from "../simulation/materials";
+import { EXAMPLE_SCENES } from "../simulation/exampleScenes";
 import { Toolbar } from "./Toolbar";
 
 describe("Toolbar", () => {
@@ -25,6 +26,63 @@ describe("Toolbar", () => {
     expect(
       screen.getByRole("toolbar", { name: "沙盒工具" }),
     ).toBeInTheDocument();
+  });
+
+  it("renders a brush radius slider and reports changes", () => {
+    const onBrushRadiusChange = vi.fn();
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        brushRadius={2}
+        onBrushRadiusChange={onBrushRadiusChange}
+        onExampleSceneSelect={vi.fn()}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
+      />,
+    );
+
+    const slider = screen.getByRole("slider", { name: "笔刷大小" });
+    expect(slider).toHaveAttribute("min", "1");
+    expect(slider).toHaveAttribute("max", "8");
+    expect(slider).toHaveValue("2");
+    expect(screen.getByText("笔刷 2")).toBeInTheDocument();
+
+    fireEvent.change(slider, { target: { value: "6" } });
+    expect(onBrushRadiusChange).toHaveBeenCalledWith(6);
+  });
+
+  it("renders example scene buttons and reports selection", async () => {
+    const user = userEvent.setup();
+    const onExampleSceneSelect = vi.fn();
+    render(
+      <Toolbar
+        tool={Material.Sand}
+        paused={false}
+        brushRadius={2}
+        onBrushRadiusChange={vi.fn()}
+        onExampleSceneSelect={onExampleSceneSelect}
+        onToolChange={vi.fn()}
+        onPauseChange={vi.fn()}
+        onClear={vi.fn()}
+        onStep={vi.fn()}
+        onShare={vi.fn()}
+        shareStatus="idle"
+      />,
+    );
+
+    for (const scene of EXAMPLE_SCENES) {
+      expect(
+        screen.getByRole("button", { name: scene.label }),
+      ).toBeInTheDocument();
+    }
+
+    await user.click(screen.getByRole("button", { name: "酸液腐蚀" }));
+    expect(onExampleSceneSelect).toHaveBeenCalledWith("acidCorrosion");
   });
 
   it("marks sand as selected and changes the tool to the eraser", async () => {

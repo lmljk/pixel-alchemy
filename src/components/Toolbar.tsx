@@ -5,12 +5,19 @@ import {
   getMaterialDefinition,
   type MaterialDefinition,
 } from "../simulation/materials";
+import {
+  EXAMPLE_SCENES,
+  type ExampleSceneId,
+} from "../simulation/exampleScenes";
 
 export type ShareStatus = "idle" | "copied" | "failed";
 
 type ToolbarProps = {
   tool: Material;
   paused: boolean;
+  brushRadius?: number;
+  onBrushRadiusChange?: (radius: number) => void;
+  onExampleSceneSelect?: (sceneId: ExampleSceneId) => void;
   onToolChange: (tool: Material) => void;
   onPauseChange: (paused: boolean) => void;
   onClear: () => void;
@@ -53,6 +60,9 @@ function MaterialButton({
 export function Toolbar({
   tool,
   paused,
+  brushRadius = 2,
+  onBrushRadiusChange = () => undefined,
+  onExampleSceneSelect = () => undefined,
   onToolChange,
   onPauseChange,
   onClear,
@@ -94,6 +104,45 @@ export function Toolbar({
           selected={tool === Material.Empty}
           onSelect={() => onToolChange(Material.Empty)}
         />
+      </div>
+
+      <div className="playtest-controls">
+        <div
+          className="brush-control"
+          role="group"
+          aria-label="笔刷设置"
+        >
+          <label htmlFor="brush-radius">笔刷 {brushRadius}</label>
+          <input
+            id="brush-radius"
+            className="brush-slider"
+            type="range"
+            min="1"
+            max="8"
+            value={brushRadius}
+            aria-label="笔刷大小"
+            onChange={(event) =>
+              onBrushRadiusChange(Number(event.currentTarget.value))
+            }
+          />
+        </div>
+
+        <div
+          className="example-scenes"
+          role="group"
+          aria-label="示例场景"
+        >
+          {EXAMPLE_SCENES.map((scene) => (
+            <button
+              key={scene.id}
+              className="tool-button scene-button"
+              type="button"
+              onClick={() => onExampleSceneSelect(scene.id)}
+            >
+              {scene.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div

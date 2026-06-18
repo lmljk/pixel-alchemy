@@ -115,6 +115,40 @@ button {
   gap: 8px;
 }
 
+.playtest-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.brush-control {
+  display: grid;
+  grid-template-columns: auto minmax(140px, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #897a68;
+  color: #453a2f;
+  background: #f7f0e5;
+  box-shadow: 3px 3px 0 #cdbba3;
+  font: 700 0.9rem/1 system-ui, sans-serif;
+}
+
+.brush-slider {
+  width: 100%;
+  accent-color: #cf913b;
+}
+
+.brush-slider:focus-visible {
+  outline: 3px solid #315f78;
+  outline-offset: 3px;
+}
+
+.example-scenes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .tool-button {
   min-height: 48px;
   padding: 0 10px;
@@ -233,6 +267,14 @@ button {
   }
 
   .simulation-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brush-control {
+    grid-template-columns: 1fr;
+  }
+
+  .example-scenes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
