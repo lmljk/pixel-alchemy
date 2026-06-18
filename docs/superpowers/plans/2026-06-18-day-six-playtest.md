@@ -598,4 +598,3 @@ Selecting a scene changes the pause button to 继续.
 At 390 x 844 there is no whole-page horizontal overflow.
 The browser console has no app errors.
 ```
-
