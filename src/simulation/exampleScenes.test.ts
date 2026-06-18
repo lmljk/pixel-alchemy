@@ -26,6 +26,12 @@ describe("exampleScenes", () => {
       "植物生长",
       "油火反应",
     ]);
+    expect(EXAMPLE_SCENES.map((scene) => scene.description)).toEqual([
+      "熔岩遇水会变成石头，并冒出蒸汽。",
+      "酸液会咬掉墙和石头，自己也一起消失。",
+      "植物吸收水后会向周围扩散。",
+      "火会点燃油，火焰向上漂。",
+    ]);
   });
 
   it.each([

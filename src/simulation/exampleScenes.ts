@@ -10,13 +10,30 @@ export type ExampleSceneId =
 export type ExampleScene = {
   id: ExampleSceneId;
   label: string;
+  description: string;
 };
 
 export const EXAMPLE_SCENES: readonly ExampleScene[] = [
-  { id: "lavaWater", label: "熔岩遇水" },
-  { id: "acidCorrosion", label: "酸液腐蚀" },
-  { id: "plantGrowth", label: "植物生长" },
-  { id: "oilFire", label: "油火反应" },
+  {
+    id: "lavaWater",
+    label: "熔岩遇水",
+    description: "熔岩遇水会变成石头，并冒出蒸汽。",
+  },
+  {
+    id: "acidCorrosion",
+    label: "酸液腐蚀",
+    description: "酸液会咬掉墙和石头，自己也一起消失。",
+  },
+  {
+    id: "plantGrowth",
+    label: "植物生长",
+    description: "植物吸收水后会向周围扩散。",
+  },
+  {
+    id: "oilFire",
+    label: "油火反应",
+    description: "火会点燃油，火焰向上漂。",
+  },
 ] as const;
 
 export function applyExampleScene(
