@@ -9,7 +9,7 @@ import {
 import { renderSimulation } from "./renderSimulation";
 
 const DEFAULT_GRID_SIZE = 160;
-const BRUSH_RADIUS = 2;
+const DEFAULT_BRUSH_RADIUS = 2;
 const STEP_MS = 1000 / 60;
 const MAX_STEPS_PER_FRAME = 4;
 
@@ -18,6 +18,7 @@ interface SandboxCanvasProps {
   paused: boolean;
   clearVersion: number;
   stepVersion: number;
+  brushRadius?: number;
   simulation?: Simulation;
 }
 
@@ -26,6 +27,7 @@ export function SandboxCanvas({
   paused,
   clearVersion,
   stepVersion,
+  brushRadius = DEFAULT_BRUSH_RADIUS,
   simulation,
 }: SandboxCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -134,7 +136,7 @@ export function SandboxCanvas({
     activeSimulation.paintCircle(
       point.x,
       point.y,
-      BRUSH_RADIUS,
+      brushRadius,
       tool,
     );
   };

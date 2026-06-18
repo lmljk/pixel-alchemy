@@ -140,6 +140,56 @@ describe("SandboxCanvas", () => {
     expect(simulation.getCell(6, 5)).toBe(Material.Empty);
   });
 
+  it("uses the provided brush radius for pointer and keyboard painting", () => {
+    const simulation = new Simulation(10, 10, () => 0);
+    const paintCircle = vi.spyOn(simulation, "paintCircle");
+    render(
+      <SandboxCanvas
+        simulation={simulation}
+        tool={Material.Sand}
+        paused
+        clearVersion={0}
+        stepVersion={0}
+        brushRadius={5}
+      />,
+    );
+    const canvas = screen.getByRole("application", {
+      name: "像素沙盒",
+    }) as HTMLCanvasElement;
+    vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 100,
+      width: 100,
+      height: 100,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.pointerDown(canvas, {
+      clientX: 55,
+      clientY: 55,
+      pointerId: 7,
+    });
+    expect(paintCircle).toHaveBeenLastCalledWith(
+      5,
+      5,
+      5,
+      Material.Sand,
+    );
+
+    canvas.focus();
+    fireEvent.keyDown(canvas, { key: "Enter" });
+    expect(paintCircle).toHaveBeenLastCalledWith(
+      5,
+      5,
+      5,
+      Material.Sand,
+    );
+  });
+
   it("keeps arrow movement in bounds and ignores unrelated keys", () => {
     const simulation = new Simulation(1, 1, () => 0);
     const paintCircle = vi.spyOn(simulation, "paintCircle");
