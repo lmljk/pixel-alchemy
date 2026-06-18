@@ -14,6 +14,10 @@ import {
   createInitialSeed,
 } from "./simulation/SeededRandom";
 import { Simulation } from "./simulation/Simulation";
+import {
+  applyExampleScene,
+  type ExampleSceneId,
+} from "./simulation/exampleScenes";
 import { Material } from "./simulation/materials";
 
 const DEFAULT_GRID_SIZE = 160;
@@ -86,6 +90,7 @@ export function App() {
   const [paused, setPaused] = useState(session.restored);
   const [clearVersion, setClearVersion] = useState(0);
   const [stepVersion, setStepVersion] = useState(0);
+  const [brushRadius, setBrushRadius] = useState(2);
   const [shareStatus, setShareStatus] =
     useState<ShareStatus>("idle");
 
@@ -115,16 +120,21 @@ export function App() {
     }
   };
 
+  const handleExampleSceneSelect = (sceneId: ExampleSceneId) => {
+    applyExampleScene(session.simulation, sceneId);
+    setPaused(true);
+  };
+
   return (
     <main className="app-shell">
       <header className="app-header">
         <h1>像素炼金术</h1>
-        <span className="experiment-label">试验 05</span>
+        <span className="experiment-label">试验 06</span>
       </header>
 
       <section className="intro-card" aria-label="玩法说明">
-        <p>选择材料，在画布上绘制；暂停后可单步观察。</p>
-        <p>熔岩遇水成石并产蒸汽，酸液会腐蚀墙、石头、木头和植物。</p>
+        <p>选择材料，在画布上绘制；拖动笔刷滑块快速铺材料。</p>
+        <p>不会搭配时，可以先加载示例场景，再用单步观察反应。</p>
         <p>分享会复制当前画布和随机状态；需要 HTTPS 或 localhost 剪贴板权限。</p>
       </section>
 
@@ -135,6 +145,7 @@ export function App() {
           paused={paused}
           clearVersion={clearVersion}
           stepVersion={stepVersion}
+          brushRadius={brushRadius}
         />
       </section>
 
@@ -147,6 +158,9 @@ export function App() {
       <Toolbar
         tool={tool}
         paused={paused}
+        brushRadius={brushRadius}
+        onBrushRadiusChange={setBrushRadius}
+        onExampleSceneSelect={handleExampleSceneSelect}
         onToolChange={setTool}
         onPauseChange={setPaused}
         onClear={() => setClearVersion((version) => version + 1)}

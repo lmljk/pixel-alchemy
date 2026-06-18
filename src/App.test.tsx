@@ -33,20 +33,18 @@ describe("App", () => {
     vi.useRealTimers();
   });
 
-  it("renders the title, sandbox, and day four controls", () => {
+  it("renders the title, sandbox, and day six playtest controls", () => {
     render(<App />);
 
     expect(
       screen.getByRole("heading", { name: "像素炼金术" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("试验 05")).toBeInTheDocument();
+    expect(screen.getByText("试验 06")).toBeInTheDocument();
     expect(
-      screen.getByText("选择材料，在画布上绘制；暂停后可单步观察。"),
+      screen.getByText("选择材料，在画布上绘制；拖动笔刷滑块快速铺材料。"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "熔岩遇水成石并产蒸汽，酸液会腐蚀墙、石头、木头和植物。",
-      ),
+      screen.getByText("不会搭配时，可以先加载示例场景，再用单步观察反应。"),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -59,6 +57,12 @@ describe("App", () => {
         screen.getByRole("button", { name: definition.label }),
       ).toBeInTheDocument();
     }
+    expect(
+      screen.getByRole("slider", { name: "笔刷大小" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "熔岩遇水" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "橡皮" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "暂停" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "单步" })).toBeDisabled();
@@ -97,6 +101,26 @@ describe("App", () => {
     expect(
       screen.getByRole("button", { name: "沙子" }),
     ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("updates the brush slider label", () => {
+    render(<App />);
+
+    const slider = screen.getByRole("slider", { name: "笔刷大小" });
+    fireEvent.change(slider, { target: { value: "6" } });
+
+    expect(screen.getByText("笔刷 6")).toBeInTheDocument();
+    expect(slider).toHaveValue("6");
+  });
+
+  it("loads an example scene paused", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "熔岩遇水" }));
+
+    expect(screen.getByRole("button", { name: "继续" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "单步" })).toBeEnabled();
   });
 
   it("copies a share URL without changing the current address", async () => {
